@@ -2,10 +2,14 @@
 # -*- coding: utf-8 -*-
 import sys
 import codecs
+import io # 追加
+
+#sys.stdout = codecs.getwriter('utf_8')(sys.stdout)
+#sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8') # 追加
 
 positionDec = {}
 
-sys.stdout = codecs.getwriter('utf_8')(sys.stdout)
+
 stamenList = 	[
 			[u'2014/3/28',u'9岡島',u'4藤田',u'5銀次',u'Dジョーンズ',u'3ユーキリス',u'7枡田',u'6松井稼',u'2嶋',u'8聖澤',u'P則本',u'L岸'],
 			[u'2014/3/29',u'9岡島',u'4藤田',u'5銀次',u'Dジョーンズ',u'3ユーキリス',u'7後藤',u'6松井稼',u'2嶋',u'8牧田',u'P塩見',u'L菊池'],
@@ -175,11 +179,10 @@ for list in stamenList:
 		positionDec[name] = positionList
 
 #ポジションのチェンジ回数を数えてみる
-for name, positionList in positionDec.iteritems():
+for name, positionList in positionDec.items():	
 	changed = 0
 	prePosition = ''
 	changeHistoryDect = {}
-	
 	for position in positionList:
 		if prePosition != '' and prePosition != position:
 			changed += 1
@@ -189,7 +192,6 @@ for name, positionList in positionDec.iteritems():
 		
 		prePosition = position
 		
-	
 	if changed > 0:
-		print name + "," + str(changed)
-		print changeHistoryDect
+		print (name + "," + str(changed))
+		print (changeHistoryDect)
