@@ -1767,10 +1767,15 @@ stamenDict = {
 ## Key   : Players name
 ## Value : positionList e.g.) [6, 4, 4, 6, ...]
 positionDec = {}
+
+## orderDict
+## Key   : Player
+## Value : OrderList e.g.) [1, 1, 2, 2, 1, ...]
+orderDict = {}
 for team, stamenList in stamenDict.items():
 	for list in stamenList:
-		for i in range(1,11):
-			p = list[i]
+		for order in range(1,11):
+			p = list[order]
 			
 			if p == '':
 				continue
@@ -1780,13 +1785,27 @@ for team, stamenList in stamenDict.items():
 				position = 'P'
 			
 			name = team + p[1:]
-						
+			
+			#Position			
 			positionList =  positionDec.get(name, '')
 			if positionList == '':
 				positionList = [position]
 			else:
 				positionList.append(position)
 			positionDec[name] = positionList
+			
+			#Order
+			strOrder = ""
+			if order == 10:
+				strOrder = "P"
+			else:
+				strOrder = str(order)
+			orderList = orderDict.get(name, '')
+			if orderList == '':
+				orderList = [strOrder]
+			else:
+				orderList.append(strOrder)
+			orderDict[name] = orderList
 
 #ポジションのチェンジ回数を数えてみる
 ## totalChangedDict
@@ -1815,12 +1834,12 @@ for name, positionList in positionDec.items():
 		prePosition = position
 		
 	if changed > 0:
-		print (name + "," + str(changed))
-		print (changeHistoryDict)
+		#print (name + "," + str(changed))
+		#print (changeHistoryDict)
 		playerSammaryDict[name] = changeHistoryDict
 
 #ポジション間「距離」算出
-## totalChangedDict
+## positionChangeDict
 ## Key   : hisotry e.g.) 4->6
 ## Value : distance
 positionChangeDict={}
@@ -1832,7 +1851,63 @@ for history in sorted(positionChangeDict.keys()):
 
 #選手ごとの「総移動距離」算出
 for name, changeHistoryDict in playerSammaryDict.items():
-        dist = 0
-        for history, count in changeHistoryDict.items() :
-                dist = dist + positionChangeDict[history] * count
-        print (name + "\t" + str(changeHistoryDict) + "\t" + str(dist))
+	dist = 0
+	totalCount = 0
+	for history, count in changeHistoryDict.items() :
+		dist = dist + positionChangeDict[history] * count
+		totalCount = totalCount + count
+	print (name + "\t" + str(changeHistoryDict) + "\t" + str(dist) + "\t" + str(totalCount))
+
+############################################
+
+#打順のチェンジ回数を数えてみる
+## totalOrderChangedDict
+## Key   : hisotry e.g.) 4->5
+## Value : count
+totalOrderChangedDict={}
+
+## playerOrderSammaryDict
+## Key   : Player
+## Value : changeHistoryDict e.g.) {'1->2': 8, '2->1': 1, '1->3': 9, '3->4': 1}
+playerOrderSammaryDict={}
+for name, orderList in orderDict.items():
+	#print (name)
+	changed = 0
+	preOrder = ''
+	changeHistoryDict = {}
+	for order in orderList:
+		if preOrder != '' and preOrder != order:
+			changed += 1
+			changeHisotry = str(preOrder) + "->" + str(order)
+			
+			changeHisotryCount =  changeHistoryDict.get(changeHisotry, 0)
+			changeHistoryDict[changeHisotry] = changeHisotryCount + 1
+			
+			totalOrderChangedDict[changeHisotry] = totalOrderChangedDict.get(changeHisotry, 0) + 1
+			
+		preOrder = order
+		
+	if changed > 0:
+		#print (name + "," + str(changed))
+		#print (changeHistoryDict)
+		playerOrderSammaryDict[name] = changeHistoryDict
+
+#打順間「距離」算出
+## orderChangeDict
+## Key   : hisotry e.g.) 4->5
+## Value : distance
+orderChangeDict={}
+for history in sorted(totalOrderChangedDict.keys()):
+        orderChangeDict[history] = 1 / totalOrderChangedDict[history]
+
+for history in sorted(orderChangeDict.keys()):
+	print (history + "\t" + str(totalOrderChangedDict[history])+ "\t" + str(orderChangeDict[history]))
+
+#選手ごとの「総移動距離」算出
+for name, changeHistoryDict in playerOrderSammaryDict.items():
+	dist = 0
+	totalCount = 0
+	for history, count in changeHistoryDict.items() :
+		dist = dist + orderChangeDict[history] * count
+		totalCount = totalCount + count
+	print (name + "\t" + str(changeHistoryDict) + "\t" + str(dist) + "\t" + str(totalCount))
