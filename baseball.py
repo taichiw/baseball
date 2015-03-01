@@ -7,9 +7,6 @@ import io # 追加
 #sys.stdout = codecs.getwriter('utf_8')(sys.stdout)
 #sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8') # 追加
 
-positionDec = {}
-
-
 stamenDict = {
 		"E": [
 			['2014/3/28','9岡島','4藤田','5銀次','Dジョーンズ','3ユーキリス','7枡田','6松井稼','2嶋','8聖澤','P則本','L岸'],
@@ -1766,6 +1763,10 @@ stamenDict = {
 	}
 
 #生データ処理
+## positionDec
+## Key   : Players name
+## Value : positionList e.g.) [6, 4, 4, 6, ...]
+positionDec = {}
 for team, stamenList in stamenDict.items():
 	for list in stamenList:
 		for i in range(1,11):
@@ -1779,10 +1780,7 @@ for team, stamenList in stamenDict.items():
 				position = 'P'
 			
 			name = team + p[1:]
-			
-			#if name == "F大谷":
-				#print (position)
-			
+						
 			positionList =  positionDec.get(name, '')
 			if positionList == '':
 				positionList = [position]
@@ -1791,9 +1789,15 @@ for team, stamenList in stamenDict.items():
 			positionDec[name] = positionList
 
 #ポジションのチェンジ回数を数えてみる
+## totalChangedDict
+## Key   : hisotry e.g.) 4->6
+## Value : count
 totalChangedDict={}
 
-#選手ごと
+## playerSammaryDict
+## Key   : Player
+## Value : changeHistoryDict e.g.) {'3->2': 8, '2->D': 1, '2->3': 9, 'D->2': 1}
+playerSammaryDict={}
 for name, positionList in positionDec.items():	
 	changed = 0
 	prePosition = ''
@@ -1802,9 +1806,6 @@ for name, positionList in positionDec.items():
 		if prePosition != '' and prePosition != position:
 			changed += 1
 			changeHisotry = prePosition + "->" + position
-			
-			#if name == "F大谷":
-				#print (changeHisotry)
 			
 			changeHisotryCount =  changeHistoryDict.get(changeHisotry, 0)
 			changeHistoryDict[changeHisotry] = changeHisotryCount + 1
@@ -1816,6 +1817,22 @@ for name, positionList in positionDec.items():
 	if changed > 0:
 		print (name + "," + str(changed))
 		print (changeHistoryDict)
+		playerSammaryDict[name] = changeHistoryDict
 
+#ポジション間「距離」算出
+## totalChangedDict
+## Key   : hisotry e.g.) 4->6
+## Value : distance
+positionChangeDict={}
 for history in sorted(totalChangedDict.keys()):
-	print (history + "\t" + str(totalChangedDict[history])+ "\t" + str(1 / totalChangedDict[history]))
+        positionChangeDict[history] = 1 / totalChangedDict[history]
+
+for history in sorted(positionChangeDict.keys()):
+	print (history + "\t" + str(totalChangedDict[history])+ "\t" + str(positionChangeDict[history]))
+
+#選手ごとの「総移動距離」算出
+for name, changeHistoryDict in playerSammaryDict.items():
+        dist = 0
+        for history, count in changeHistoryDict.items() :
+                dist = dist + positionChangeDict[history] * count
+        print (name + "\t" + str(changeHistoryDict) + "\t" + str(dist))
