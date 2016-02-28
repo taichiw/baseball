@@ -26,23 +26,47 @@ func main() {
 	
 	//Start game's pitcher is first ace
 	var ace = Ace{pList[0].pitcher, 0}
+	
+	//2nd pitcher
+	var secondAce = Ace{"", 0}
 
 	var pMap map[string]int = map[string]int{}
 	for _, p := range pList {
-		fmt.Printf("%s\t%s\t%d\t%s\n", p.date, ace.pitcher, ace.winnum, p.pitcher)
+		var detail = ""
+		if (p.pitcher == ace.pitcher) {
+			detail = "Ace"
+		} else if (p.pitcher == secondAce.pitcher) {
+			detail = "SecondAce"
+		}
+		
+		fmt.Printf("%s\t%s\t%s\t%d\t%s\t%d\t%s\r\n", p.date, p.pitcher, ace.pitcher, ace.winnum, secondAce.pitcher, secondAce.winnum, detail)
 
 		//fmt.Println(i)
 		//fmt.Println(p.pitcher)
-		if p.pitcher == p.winpitcher {
+		//fmt.Println(p.winpitcher);
+		if p.pitcher == p.winpitcher || p.winpitcher == "○" {
 			winnum := pMap[p.pitcher]
 			winnum += 1
 			pMap[p.pitcher] = winnum
 			//fmt.Printf("%s:%d\n", p.pitcher, pMap[p.pitcher])
 			
 			if winnum > ace.winnum {
+				//When ace is changed, previuos ace will be become second ace
+				if ace.pitcher != p.pitcher {
+					secondAce.pitcher = ace.pitcher
+					secondAce.winnum = ace.winnum
+				}
+				
 				ace.pitcher = p.pitcher
 				ace.winnum = winnum
 			}
+			
+			//Ace cannot be scond ace
+			if winnum > secondAce.winnum && p.pitcher != ace.pitcher {
+					secondAce.pitcher = p.pitcher
+					secondAce.winnum = winnum
+			}
+
 		}
 	}
 
