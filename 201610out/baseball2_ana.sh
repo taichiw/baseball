@@ -14,6 +14,9 @@ WORKDIR="/home/taichiwbb/tmp/${TEAM}"
 GAME_NO_1=1
 GAME_NO_2=2
 
+#GAME_NO_1=50
+#GAME_NO_2=51
+
 OPENFILE=`fileName $GAME_NO_1`
 COMPFILE=`fileName $GAME_NO_2`
 
@@ -40,7 +43,7 @@ do
         PERSON=`echo ${line} | awk -F ',' '{print $3}'`
         PLAY=`grep ${PERSON} ${COMPFILE} | grep -v ',投,' | wc -l`
         if [ ${PLAY} -eq 0 ]; then
-            OUTED=`grep ${PERSON} ${OPENFILE}`
+            OUTED=`grep ${PERSON} ${OPENFILE} | grep -v ',投,'`
 
             REASON=""
 
@@ -56,6 +59,12 @@ do
             B_LR=`echo ${OUTED} | awk -F ',' '{print $4}'`
             if [ ${OPP_P_LR} = '左' -a ${B_LR} = '左' ]; then
                 REASON="${REASON}LvsL|"
+            fi
+
+            #Catcher
+            POSITION=`echo ${OUTED} | awk -F ',' '{print $2}'`	
+	    if [ ${POSITION} = '捕' ]; then
+                REASON="${REASON}Battery|"
             fi
 
             echo "${OUTED},${REASON}" >> ${OUTTMP}
@@ -75,7 +84,7 @@ do
         PERSON=`echo ${line} | awk -F ',' '{print $3}'`
         PLAY=`grep ${PERSON} ${OPENFILE} | grep -v ',投,' | wc -l`
         if [ ${PLAY} -eq 0 ]; then
-            grep ${PERSON} ${COMPFILE} >> ${OUTTMP}
+            grep ${PERSON} ${COMPFILE} | grep -v ',投,'  >> ${OUTTMP}
         fi
     done < ${COMPFILE}
     echo "<INS>"
@@ -103,13 +112,35 @@ done
 
 outData > ${OUTFILE}
 
+function outLine(){
+    line=$1
+    GREP_COND=$2
+
+    NAME=`echo ${line} | awk '{print $2}'`
+    echo -n "<OUT>${line}"
+
+    echo -n "<OUT_DETAIL>"
+    NUM_LvsL=`eval "grep '<OUT>' ${OUTFILE} | grep ${NAME} ${GREP_COND} | grep 'LvsL' | wc -l"` 
+    if [ ${NUM_LvsL} -gt 0 ]; then
+        echo -n "（左対左 ${NUM_LvsL}回）"
+    fi
+
+    NUM_C=`eval "grep '<OUT>' ${OUTFILE} | grep ${NAME} ${GREP_COND} | grep 'Battery' | wc -l"`
+    if [ ${NUM_C} -gt 0 ]; then
+        echo -n "（捕手 ${NUM_C}回）"
+    fi
+
+    echo -n "</OUT_DETAIL>"
+
+    echo "</OUT>"
+}
 
 function outList(){
 echo '<OUT_LIST>'
 LIST=`grep '<OUT>' ${OUTFILE} | awk -F ',' '{print $3}' | sort | uniq -c | sort -r`
 while read line
 do
-    echo "<OUT>${line}</OUT>"
+    outLine "$line" ""
 done << END
 ${LIST}
 END
@@ -121,7 +152,7 @@ echo '<OUT_LIST_AVE>'
 LIST=`grep '<OUT>' ${OUTFILE} | grep 'AVE' | awk -F ',' '{print $3}' | sort | uniq -c | sort -r`
 while read line
 do
-    echo "<OUT>${line}</OUT>"
+    outLine "$line" "|grep 'AVE'"
 done << END
 ${LIST}
 END
@@ -133,9 +164,7 @@ echo '<OUT_LIST_NONAVE>'
 LIST=`grep '<OUT>' ${OUTFILE} | grep -v 'AVE' | awk -F ',' '{print $3}' | sort | uniq -c | sort -r`
 while read line
 do
-    NAME=`echo ${line} | awk '{print $2}'`
-    NUM_LvsL=`grep '<OUT>' ${OUTFILE} | grep ${NAME} | grep 'LvsL' | wc -l`
-    echo "<OUT>${line} （左対左 ${NUM_LvsL}回）</OUT>"
+    outLine "$line" "| grep -v 'AVE'"
 done << END
 ${LIST}
 END
