@@ -10,6 +10,7 @@ function dateComp()
 
 TEAM=$1
 URL_BASE=$2
+echo $URL_BASE
 
 CURL="/usr/local/bin/curl"
 NKF="/usr/local/bin/nkf"
@@ -19,8 +20,10 @@ if [ ! -e ${OUTDIR} ]; then
     mkdir ${OUTDIR}
 fi
 
-OPENING_DAY=20160325
+#OPENING_DAY=20160325
+OPENING_DAY=20090403
 TODAY=`date +%Y%m%d`
+TODAY="20091130"
 
 DATE=${OPENING_DAY}
 GAME_NO=1
@@ -28,6 +31,7 @@ GAME_NO=1
 REQ=`dateComp $DATE $TODAY`
 while [ ${REQ} -lt 0 ]
 do
+#echo $DATE
 
     FILENAME="${DATE}01"
     HTML_FILENAME="${OUTDIR}/${FILENAME}"
@@ -39,6 +43,7 @@ do
     OUTFILE=${OUTDIR}/`printf "%.3d" ${GAME_NO}`_${FILENAME}_${TEAM}.dat
     
     URL="${URL_BASE}/${FILENAME}/"
+#echo $URL
     
     HTTP_STATUS=`${CURL} -I ${URL} -o /dev/null -w '%{http_code}\n' -s`
     if [ ${HTTP_STATUS} = '200' ]; then
