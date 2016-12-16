@@ -8,7 +8,7 @@ function makefile() {
 
 #echo $TEAM
 
-#    ./baseball2.sh ${TEAM} ${URL_BASE}
+    ./baseball2.sh ${TEAM} ${URL_BASE}
     ./baseball2_ana.sh ${TEAM}
     ./baseball2_html.sh ${TEAM} ${URL_BASE}
 }

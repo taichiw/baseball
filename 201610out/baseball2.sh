@@ -15,6 +15,7 @@ CURL="/usr/local/bin/curl"
 NKF="/usr/local/bin/nkf"
 
 OUTDIR="/home/taichiwbb/tmp/${TEAM}"
+rm -r ${OUTDIR}
 if [ ! -e ${OUTDIR} ]; then
     mkdir ${OUTDIR}
 fi
